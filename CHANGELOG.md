@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-job-response` will be documented in this file
 
+## 0.1.3 - 0.1.4 - 2023-06-19
+
+- Add compatibility with Laravel 9.x or higher. Require PHP 8.1 or higher.
+
+## 0.1.2 - 0.1.3 - 2020-06-11
+
+- Allow jobs to be manually failed. Laravel Jobs can be manually failed with `$job->fail()` with an optional
+\Throwable - this release provides the transport capabilities for the response to handle this use case and the
+corresponding tests.
+
 ## 0.1.1 - 0.1.2 - 2020-06-11
 
 - Bug fixes and Travis CI setup.
