@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse;
 
 class Response implements ResponseContract

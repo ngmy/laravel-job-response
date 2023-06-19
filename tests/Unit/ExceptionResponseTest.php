@@ -1,19 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Unit;
+
 use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
 use Williamjulianvicary\LaravelJobResponse\Tests\Data\TestException;
 use Williamjulianvicary\LaravelJobResponse\Tests\TestCase;
-use Williamjulianvicary\LaravelJobResponse\TransportFactory;
 
-class ExceptionResponseTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+final class ExceptionResponseTest extends TestCase
 {
-
-    public function testExceptionResponseGetters()
+    public function testExceptionResponseGetters(): void
     {
         $exception = new TestException();
         $data = [
-            'exception_class' => get_class($exception),
+            'exception_class' => \get_class($exception),
             'exception_basename' => class_basename($exception),
             'message' => $exception->getMessage(),
             'file' => $exception->getFile(),
@@ -23,12 +29,12 @@ class ExceptionResponseTest extends TestCase
         ];
 
         $exceptionResponse = new ExceptionResponse($data);
-        $this->assertEquals(TestException::class, $exceptionResponse->getExceptionClass());
-        $this->assertEquals('TestException', $exceptionResponse->getExceptionBaseName());
-        $this->assertEquals($exception->getMessage(), $exceptionResponse->getMessage());
-        $this->assertEquals($exception->getFile(), $exceptionResponse->getFile());
-        $this->assertEquals($exception->getCode(), $exceptionResponse->getCode());
-        $this->assertEquals($exception->getTraceAsString(), $exceptionResponse->getTrace());
-        $this->assertEquals($exception->getLine(), $exceptionResponse->getLine());
+        self::assertSame(TestException::class, $exceptionResponse->getExceptionClass());
+        self::assertSame('TestException', $exceptionResponse->getExceptionBaseName());
+        self::assertSame($exception->getMessage(), $exceptionResponse->getMessage());
+        self::assertSame($exception->getFile(), $exceptionResponse->getFile());
+        self::assertSame($exception->getCode(), $exceptionResponse->getCode());
+        self::assertSame($exception->getTraceAsString(), $exceptionResponse->getTrace());
+        self::assertSame($exception->getLine(), $exceptionResponse->getLine());
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse;
 
 use Williamjulianvicary\LaravelJobResponse\Transport\CacheTransport;
@@ -14,14 +16,14 @@ class TransportFactory
 
     private const CLASS_MAP = [
         self::REDIS => RedisTransport::class,
-        self::CACHE => CacheTransport::class
+        self::CACHE => CacheTransport::class,
     ];
 
     private $instances = [];
 
     public function getTransport($transport = 'redis')
     {
-        if (!in_array($transport, self::TRANSPORT_TYPES, true)) {
+        if (!\in_array($transport, self::TRANSPORT_TYPES, true)) {
             throw new \InvalidArgumentException('Transport unknown.');
         }
 

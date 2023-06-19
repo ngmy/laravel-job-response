@@ -1,48 +1,55 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Feature;
-use Williamjulianvicary\LaravelJobResponse\Exceptions\JobFailedException;
+
+use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
 use Williamjulianvicary\LaravelJobResponse\Response;
 use Williamjulianvicary\LaravelJobResponse\ResponseCollection;
 use Williamjulianvicary\LaravelJobResponse\Tests\Data\TestJob;
-use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
 use Williamjulianvicary\LaravelJobResponse\Tests\TestCase;
 
-class FacadeMethodTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+final class FacadeMethodTest extends TestCase
 {
-    protected function getEnvironmentSetUp($app)
+    public function testGenerateIdent(): void
     {
-        $app['config']->set('queue.default', 'sync');
-        $app['config']->set('cache.default', 'array');
-        $app['config']->set('job-response.transport', 'cache');
+        self::assertIsString(LaravelJobResponse::generateIdent());
     }
 
-    public function testGenerateIdent()
-    {
-        $this->assertIsString(LaravelJobResponse::generateIdent());
-    }
-
-    public function testTraitAwaitResponse()
+    public function testTraitAwaitResponse(): void
     {
         $job = new TestJob();
         $response = $job->awaitResponse(10);
-        $this->assertInstanceOf(Response::class, $response);
+        self::assertInstanceOf(Response::class, $response);
     }
 
-    public function testAwaitResponse()
+    public function testAwaitResponse(): void
     {
         $job = new TestJob();
         $response = LaravelJobResponse::awaitResponse($job, 10);
 
-        $this->assertInstanceOf(Response::class, $response);
+        self::assertInstanceOf(Response::class, $response);
     }
 
-    public function testAwaitResponses()
+    public function testAwaitResponses(): void
     {
         $jobs = [new TestJob(), new TestJob()];
         $response = LaravelJobResponse::awaitResponses($jobs, 10);
 
-        $this->assertInstanceOf(ResponseCollection::class, $response);
-        $this->assertCount(2, $response);
+        self::assertInstanceOf(ResponseCollection::class, $response);
+        self::assertCount(2, $response);
+    }
+
+    protected function getEnvironmentSetUp($app): void
+    {
+        $app['config']->set('queue.default', 'sync');
+        $app['config']->set('cache.default', 'array');
+        $app['config']->set('job-response.transport', 'cache');
     }
 }
