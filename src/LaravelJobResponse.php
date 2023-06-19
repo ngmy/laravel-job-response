@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse;
 
 use Illuminate\Contracts\Bus\Dispatcher;
@@ -13,24 +15,16 @@ class LaravelJobResponse
 
     public function generateIdent(string $class = null): string
     {
-        return ($class ?? self::class) . ':rpc:' . Str::random(80);
+        return ($class ?? self::class).':rpc:'.Str::random(80);
     }
 
-    /**
-     * @param bool $flag
-     * @return LaravelJobResponse
-     */
-    public function throwExceptionOnFailure(bool $flag = false): LaravelJobResponse
+    public function throwExceptionOnFailure(bool $flag = false): self
     {
         $this->throwExceptionOnFailure = $flag;
+
         return $this;
     }
 
-    /**
-     * @param JobCanRespond $job
-     * @param int $timeout
-     * @return ResponseContract
-     */
     public function awaitResponse(JobCanRespond $job, int $timeout = 10): ResponseContract
     {
         // Dispatch the job
@@ -39,26 +33,23 @@ class LaravelJobResponse
 
         return app(TransportContract::class)
             ->throwExceptionOnFailure($this->throwExceptionOnFailure)
-            ->awaitResponse($job->getResponseIdent(), $timeout);
+            ->awaitResponse($job->getResponseIdent(), $timeout)
+        ;
     }
 
-    /**
-     * @param array $jobs
-     * @param int $timeout
-     * @return ResponseCollection
-     */
     public function awaitResponses(array $jobs, int $timeout = 10): ResponseCollection
     {
         $queueIdent = $this->generateIdent();
 
         $jobCollection = collect($jobs);
-        $jobCollection->each(static function(JobCanRespond $job) use ($queueIdent) {
+        $jobCollection->each(static function (JobCanRespond $job) use ($queueIdent): void {
             $job->prepareResponse($queueIdent);
             app(Dispatcher::class)->dispatch($job);
         });
 
         return app(TransportContract::class)
             ->throwExceptionOnFailure($this->throwExceptionOnFailure)
-            ->awaitResponses($queueIdent, $jobCollection->count(), $timeout);
+            ->awaitResponses($queueIdent, $jobCollection->count(), $timeout)
+        ;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse;
 
 use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
@@ -13,7 +15,7 @@ trait CanRespond
     {
         // Don't re-prepare the response if it has already been prepared.
         if (!isset($this->responseIdent)) {
-            $this->responseIdent = $id ?? (string)LaravelJobResponse::generateIdent(self::class);
+            $this->responseIdent = $id ?? (string) LaravelJobResponse::generateIdent(self::class);
         }
 
         return $this;
@@ -24,9 +26,6 @@ trait CanRespond
         $this->respondWithException($exception);
     }
 
-    /**
-     * @param $data
-     */
     public function respond($data): void
     {
         app(TransportContract::class)->respond($this->getResponseIdent(), $data);
@@ -45,8 +44,9 @@ trait CanRespond
     /**
      * Dispatch the current job class and await a response.
      *
-     * @param int $timeout default waits 10 seconds for a response
+     * @param int  $timeout        default waits 10 seconds for a response
      * @param bool $throwException should we throw an exception on failures?
+     *
      * @return mixed
      */
     public function awaitResponse($timeout = 10, $throwException = false): ResponseContract

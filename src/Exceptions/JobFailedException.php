@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse\Exceptions;
 
 use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
@@ -19,11 +21,7 @@ class JobFailedException extends \Exception
         return $this->exceptionResponse;
     }
 
-    /**
-     * @param ExceptionResponse $exceptionResponse
-     * @return JobFailedException
-     */
-    public static function fromExceptionResponse(ExceptionResponse $exceptionResponse): JobFailedException
+    public static function fromExceptionResponse(ExceptionResponse $exceptionResponse): self
     {
         return new self('Job Failed', 0, null, $exceptionResponse);
     }
