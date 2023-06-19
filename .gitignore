@@ -1,7 +1,10 @@
 build
 docs
-vendor
 coverage
 *.cache
 .idea/
 /.env
+
+# Composer
+/vendor/
+/vendor-bin/**/vendor/
