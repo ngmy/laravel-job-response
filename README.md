@@ -11,7 +11,7 @@ Have you ever needed to run a Laravel job (or multiple jobs), wait for the respo
 You can install the package via composer:
 
 ```bash
-composer require williamjulianvicary/laravel-job-response
+composer require ngmy/laravel-job-response
 ```
 
 ## Requirements

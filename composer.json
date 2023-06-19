@@ -1,5 +1,5 @@
 {
-    "name": "williamjulianvicary/laravel-job-response",
+    "name": "ngmy/laravel-job-response",
     "description": "Add responses to Laravel Jobs - allowing your application to wait for a response from a dispatched job.",
     "keywords": [
         "williamjulianvicary",
