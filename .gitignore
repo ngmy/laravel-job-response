@@ -8,3 +8,7 @@ coverage
 # Composer
 /vendor/
 /vendor-bin/**/vendor/
+
+# PHP-CS-Fixer
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
