@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse;
 
 class ResponseFactory
 {
     /**
-     * @param array $response
      * @return ExceptionResponse|Response
      */
     public static function create(array $response): ResponseContract

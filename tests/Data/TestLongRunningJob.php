@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Data;
 
 use Illuminate\Bus\Queueable;
@@ -11,7 +13,10 @@ use Williamjulianvicary\LaravelJobResponse\Contracts\JobCanRespond;
 
 class TestLongRunningJob implements ShouldQueue, JobCanRespond
 {
-    use InteractsWithQueue, Queueable, Dispatchable, CanRespond;
+    use CanRespond;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
 
     public $sleep;
 
@@ -20,7 +25,7 @@ class TestLongRunningJob implements ShouldQueue, JobCanRespond
         $this->sleep = $sleep;
     }
 
-    public function handle()
+    public function handle(): void
     {
         usleep($this->sleep * 1000 * 1000);
         $this->respond(true);

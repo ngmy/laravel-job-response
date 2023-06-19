@@ -1,8 +1,14 @@
 build
-composer.lock
 docs
-vendor
 coverage
 *.cache
 .idea/
 /.env
+
+# Composer
+/vendor/
+/vendor-bin/**/vendor/
+
+# PHP CS Fixer
+/.php-cs-fixer.php
+/.php-cs-fixer.cache

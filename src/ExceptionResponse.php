@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse;
 
 class ExceptionResponse implements ResponseContract
@@ -34,7 +36,7 @@ class ExceptionResponse implements ResponseContract
     }
 
     /**
-     * @return mixed|string|null
+     * @return null|mixed|string
      */
     public function getTrace()
     {
@@ -42,7 +44,7 @@ class ExceptionResponse implements ResponseContract
     }
 
     /**
-     * @return mixed|string|null
+     * @return null|mixed|string
      */
     public function getMessage()
     {
@@ -50,7 +52,7 @@ class ExceptionResponse implements ResponseContract
     }
 
     /**
-     * @return int|mixed|null
+     * @return null|int|mixed
      */
     public function getCode()
     {
@@ -58,7 +60,7 @@ class ExceptionResponse implements ResponseContract
     }
 
     /**
-     * @return int|mixed|null
+     * @return null|int|mixed
      */
     public function getLine()
     {
@@ -66,7 +68,7 @@ class ExceptionResponse implements ResponseContract
     }
 
     /**
-     * @return mixed|string|null
+     * @return null|mixed|string
      */
     public function getFile()
     {

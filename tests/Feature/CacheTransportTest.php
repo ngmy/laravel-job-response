@@ -1,28 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Feature;
-use Williamjulianvicary\LaravelJobResponse\Tests\TestCase;
-use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
-use Williamjulianvicary\LaravelJobResponse\Transport\CacheTransport;
-use Illuminate\Support\Facades\Config;
+
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
+use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
+use Williamjulianvicary\LaravelJobResponse\Tests\TestCase;
+use Williamjulianvicary\LaravelJobResponse\Transport\CacheTransport;
 
-class CacheTransportTest extends TestCase
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+final class CacheTransportTest extends TestCase
 {
-    protected function getEnvironmentSetUp($app)
-    {
-        $app['config']->set('job-response.transport', 'cache');
-        $app['config']->set('cache.default', 'array');
-    }
-
-    public function testExceptionThrownForIncorrectStoreType()
+    public function testExceptionThrownForIncorrectStoreType(): void
     {
         Config::set('cache.default', 'apc');
         $this->expectException(\InvalidArgumentException::class);
         new CacheTransport();
     }
 
-    public function testExceptionThrownWhenLockCannotBeClaimed()
+    public function testExceptionThrownWhenLockCannotBeClaimed(): void
     {
         $this->expectException(TimeoutException::class);
         $lock = Cache::lock('test:lock', 30);
@@ -33,5 +35,11 @@ class CacheTransportTest extends TestCase
         $cacheTransport->sendResponse('test', 'test');
 
         $lock->release();
+    }
+
+    protected function getEnvironmentSetUp($app): void
+    {
+        $app['config']->set('job-response.transport', 'cache');
+        $app['config']->set('cache.default', 'array');
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Data;
 
 use Illuminate\Bus\Queueable;
@@ -11,14 +13,16 @@ use Williamjulianvicary\LaravelJobResponse\Contracts\JobCanRespond;
 
 class TestManuallyFailedJob implements ShouldQueue, JobCanRespond
 {
-    use InteractsWithQueue, Queueable, Dispatchable, CanRespond;
+    use CanRespond;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
 
     public function __construct()
     {
-
     }
 
-    public function handle()
+    public function handle(): void
     {
         $this->fail();
     }
