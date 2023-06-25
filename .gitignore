@@ -9,6 +9,9 @@ coverage
 /vendor/
 /vendor-bin/**/vendor/
 
+# PHPUnit
+/phpunit.xml
+
 # PHPStan
 /phpstan.neon
 
