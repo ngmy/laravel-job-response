@@ -19,7 +19,7 @@
         "php": "^8.1",
         "laravel/framework": "^9.0 || ^10.0",
         "ext-json": "*",
-        "predis/predis": "^1.1"
+        "ext-redis": "*"
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "^1.8",
