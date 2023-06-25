@@ -6,14 +6,14 @@ namespace Williamjulianvicary\LaravelJobResponse;
 
 class Response implements ResponseContract
 {
-    private $data;
+    private readonly mixed $data;
 
-    public function __construct($data = null)
+    public function __construct(mixed $data = null)
     {
         $this->data = $data;
     }
 
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }

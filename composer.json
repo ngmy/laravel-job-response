@@ -19,7 +19,7 @@
         "php": "^8.1",
         "laravel/framework": "^9.0 || ^10.0",
         "ext-json": "*",
-        "predis/predis": "^1.1"
+        "ext-redis": "*"
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "^1.8",
@@ -39,6 +39,10 @@
     "scripts": {
         "fmt": [
             "@php vendor-bin/php-cs-fixer/vendor/bin/php-cs-fixer fix --allow-risky=yes"
+        ],
+        "lint": [
+            "@php vendor-bin/phpstan/vendor/bin/phpstan clear-result-cache || exit $?",
+            "@php vendor-bin/phpstan/vendor/bin/phpstan analyse"
         ],
         "test": "@php vendor/bin/phpunit",
         "test-coverage": "@php vendor/bin/phpunit --coverage-html coverage"

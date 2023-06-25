@@ -6,14 +6,25 @@ namespace Williamjulianvicary\LaravelJobResponse;
 
 class ExceptionResponse implements ResponseContract
 {
-    private ?string $trace = null;
-    private ?string $message = null;
-    private ?int $code = null;
-    private ?int $line = null;
-    private ?string $file = null;
-    private ?string $exceptionClass = null;
-    private ?string $exceptionBaseName = null;
+    private readonly ?string $exceptionClass;
+    private readonly ?string $exceptionBaseName;
+    private readonly ?string $trace;
+    private readonly ?string $message;
+    private readonly ?int $code;
+    private readonly ?int $line;
+    private readonly ?string $file;
 
+    /**
+     * @param array{
+     *     exception_class?: string,
+     *     exception_basename?: string,
+     *     message?: string,
+     *     file?: string,
+     *     code?: int,
+     *     trace?: string,
+     *     line?: int,
+     * }|array{} $exception
+     */
     public function __construct(array $exception)
     {
         $this->exceptionClass = $exception['exception_class'] ?? null;
@@ -25,52 +36,37 @@ class ExceptionResponse implements ResponseContract
         $this->file = $exception['file'] ?? null;
     }
 
-    public function getExceptionClass()
+    public function getExceptionClass(): ?string
     {
         return $this->exceptionClass;
     }
 
-    public function getExceptionBaseName()
+    public function getExceptionBaseName(): ?string
     {
         return $this->exceptionBaseName;
     }
 
-    /**
-     * @return null|mixed|string
-     */
-    public function getTrace()
+    public function getTrace(): ?string
     {
         return $this->trace;
     }
 
-    /**
-     * @return null|mixed|string
-     */
-    public function getMessage()
+    public function getMessage(): ?string
     {
         return $this->message;
     }
 
-    /**
-     * @return null|int|mixed
-     */
-    public function getCode()
+    public function getCode(): ?int
     {
         return $this->code;
     }
 
-    /**
-     * @return null|int|mixed
-     */
-    public function getLine()
+    public function getLine(): ?int
     {
         return $this->line;
     }
 
-    /**
-     * @return null|mixed|string
-     */
-    public function getFile()
+    public function getFile(): ?string
     {
         return $this->file;
     }

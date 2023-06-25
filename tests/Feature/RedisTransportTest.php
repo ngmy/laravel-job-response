@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Feature;
 
+use Illuminate\Config\Repository;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
-use Williamjulianvicary\LaravelJobResponse\LaravelJobResponse;
+use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
 use Williamjulianvicary\LaravelJobResponse\Response;
 use Williamjulianvicary\LaravelJobResponse\ResponseCollection;
 use Williamjulianvicary\LaravelJobResponse\Tests\Data\TestJob;
@@ -33,12 +35,12 @@ final class RedisTransportTest extends TestCase
     public function testMultipleJobSuccess(): void
     {
         Config::set('queue.default', 'database');
-        $ident = app(LaravelJobResponse::class)->generateIdent();
+        $ident = LaravelJobResponse::generateIdent();
 
         $jobs = [new TestJob(), new TestJob()];
-        $jobs = collect($jobs)->map(function ($job) use ($ident): void {
+        $jobs = collect($jobs)->map(function (TestJob $job) use ($ident): void {
             $job->prepareResponse($ident);
-            app(Dispatcher::class)->dispatch($job);
+            App::make(Dispatcher::class)->dispatch($job);
         });
 
         Artisan::call('queue:work', [
@@ -49,7 +51,7 @@ final class RedisTransportTest extends TestCase
             '--once' => 1,
         ]);
 
-        $responses = app(TransportContract::class)->awaitResponses($ident, 2, 5);
+        $responses = App::make(TransportContract::class)->awaitResponses($ident, 2, 5);
 
         self::assertInstanceOf(ResponseCollection::class, $responses);
         self::assertCount(2, $responses);
@@ -58,7 +60,7 @@ final class RedisTransportTest extends TestCase
     public function testTimeoutOnNoQueueResponse(): void
     {
         $this->expectException(TimeoutException::class);
-        app(TransportContract::class)->awaitResponse('dummy', 1);
+        App::make(TransportContract::class)->awaitResponse('dummy', 1);
     }
 
     public function testTimeOnNoResponseMultipleResponses(): void
@@ -66,12 +68,14 @@ final class RedisTransportTest extends TestCase
         Config::set('queue.default', 'database');
         $this->expectException(TimeoutException::class);
 
-        app(TransportContract::class)->awaitResponses('dummy', 3, -1);
+        App::make(TransportContract::class)->awaitResponses('dummy', 3, -1);
     }
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('job-response.transport', 'redis');
-        $app['config']->set('queue.default', 'sync');
+        $config = $app['config'];
+        \assert($config instanceof Repository);
+        $config->set('job-response.transport', 'redis');
+        $config->set('queue.default', 'sync');
     }
 }

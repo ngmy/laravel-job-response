@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Feature;
 
+use Illuminate\Config\Repository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
@@ -32,14 +33,16 @@ final class CacheTransportTest extends TestCase
         $lock->get();
         $cacheTransport = new CacheTransport();
         $cacheTransport->lockWaitSeconds = 1;
-        $cacheTransport->sendResponse('test', 'test');
+        $cacheTransport->sendResponse('test', ['response' => 'test']);
 
         $lock->release();
     }
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('job-response.transport', 'cache');
-        $app['config']->set('cache.default', 'array');
+        $config = $app['config'];
+        \assert($config instanceof Repository);
+        $config->set('job-response.transport', 'cache');
+        $config->set('cache.default', 'array');
     }
 }

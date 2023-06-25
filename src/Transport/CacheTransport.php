@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Williamjulianvicary\LaravelJobResponse\Transport;
 
+use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
-use Williamjulianvicary\LaravelJobResponse\Exceptions\JobFailedException;
+use Illuminate\Support\Facades\Config;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
 use Williamjulianvicary\LaravelJobResponse\ResponseCollection;
 use Williamjulianvicary\LaravelJobResponse\ResponseContract;
@@ -37,11 +38,12 @@ class CacheTransport extends TransportAbstract implements TransportContract
     /**
      * Instance of the cache store used for all storage/collection calls.
      */
-    private Repository $cacheStore;
+    private readonly Repository $cacheStore;
 
     public function __construct(string $store = null)
     {
-        $store ??= (string) config('job-transport.cache.store');
+        \assert(\is_string(Config::get('job-transport.cache.store')) || null === Config::get('job-transport.cache.store'));
+        $store ??= (string) Config::get('job-transport.cache.store');
         $this->cacheStore = Cache::store($store);
 
         if (!method_exists($this->cacheStore->getStore(), 'lock')) {
@@ -52,20 +54,31 @@ class CacheTransport extends TransportAbstract implements TransportContract
     }
 
     /**
+     * @return list<array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}}>
+     *
      * @throws TimeoutException
      */
-    public function _awaitResponse(string $id, int $timeout, int $expectedResponses = 1): array
+    public function _awaitResponses(string $id, int $timeout, int $expectedResponses = 1): array
     {
         $timeoutAt = now()->addSeconds($timeout);
 
-        $response = null;
+        $responses = [];
         while (true) {
             if ($timeoutAt < now()) {
                 throw new TimeoutException('Timed out while waiting for a response');
             }
 
-            if ($response = $this->cacheStore->get($id)) {
-                if (\count($response) >= $expectedResponses) {
+            if ($responses = $this->cacheStore->get($id)) {
+                \assert(\is_array($responses));
+                if (\count($responses) >= $expectedResponses) {
                     break;
                 }
             }
@@ -73,52 +86,41 @@ class CacheTransport extends TransportAbstract implements TransportContract
             usleep($this->millisecondPollWait * 1000);
         }
 
-        return $response;
+        \assert(\is_array($responses));
+
+        return $responses;
     }
 
-    /**
-     * @throws TimeoutException
-     * @throws JobFailedException
-     */
     public function awaitResponse(string $id, int $timeout): ResponseContract
     {
-        $response = $this->_awaitResponse($id, $timeout, 1);
-        $response = $response[0];
+        $responses = $this->_awaitResponses($id, $timeout, 1);
+        $response = $responses[0];
 
         return $this->createResponse($response);
     }
 
-    /**
-     * @param int $expectedResponses Number of responses to expect
-     *
-     * @throws TimeoutException
-     * @throws JobFailedException
-     */
     public function awaitResponses(string $id, int $expectedResponses, int $timeout): ResponseCollection
     {
-        return $this->createResponses($this->_awaitResponse($id, $timeout, $expectedResponses));
+        return $this->createResponses($this->_awaitResponses($id, $timeout, $expectedResponses));
     }
 
-    /**
-     * @noinspection PhpDocMissingThrowsInspection
-     *
-     * @param mixed $data
-     *
-     * @throws TimeoutException
-     */
-    public function sendResponse(string $id, $data): void
+    public function sendResponse(string $id, array $data): void
     {
-        $lock = $this->cacheStore->lock($id.$this->lockIdSuffix, $this->lockHoldSeconds);
+        $store = $this->cacheStore->getStore();
+        \assert($store instanceof LockProvider);
+        $lock = $store->lock($id.$this->lockIdSuffix, $this->lockHoldSeconds);
 
         try {
             $lock->block($this->lockWaitSeconds);
+
             $cacheData = $this->cacheStore->get($id, []);
+            \assert(\is_array($cacheData));
             $cacheData[] = $data;
             $this->cacheStore->put($id, $cacheData, $this->cacheTtl);
         } catch (LockTimeoutException $e) {
             throw new TimeoutException('Timed out attempting to acquire cache lock - something went wrong.');
         } finally {
-            optional($lock)->release();
+            $lock->release();
         }
     }
 }

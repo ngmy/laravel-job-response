@@ -7,6 +7,16 @@ namespace Williamjulianvicary\LaravelJobResponse;
 class ResponseFactory
 {
     /**
+     * @param array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}} $response
+     *
      * @return ExceptionResponse|Response
      */
     public static function create(array $response): ResponseContract

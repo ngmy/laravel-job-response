@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Williamjulianvicary\LaravelJobResponse;
 
+use Illuminate\Support\Facades\App;
 use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
 use Williamjulianvicary\LaravelJobResponse\Transport\TransportContract;
 
@@ -15,7 +16,7 @@ trait CanRespond
     {
         // Don't re-prepare the response if it has already been prepared.
         if (!isset($this->responseIdent)) {
-            $this->responseIdent = $id ?? (string) LaravelJobResponse::generateIdent(self::class);
+            $this->responseIdent = $id ?? LaravelJobResponse::generateIdent(self::class);
         }
 
         return $this;
@@ -26,14 +27,14 @@ trait CanRespond
         $this->respondWithException($exception);
     }
 
-    public function respond($data): void
+    public function respond(mixed $data): void
     {
-        app(TransportContract::class)->respond($this->getResponseIdent(), $data);
+        App::make(TransportContract::class)->respond($this->getResponseIdent(), $data);
     }
 
     public function respondWithException(?\Throwable $exception = null): void
     {
-        app(TransportContract::class)->handleFailure($this->getResponseIdent(), $exception);
+        App::make(TransportContract::class)->handleFailure($this->getResponseIdent(), $exception);
     }
 
     public function getResponseIdent(): string
@@ -47,9 +48,11 @@ trait CanRespond
      * @param int  $timeout        default waits 10 seconds for a response
      * @param bool $throwException should we throw an exception on failures?
      *
-     * @return mixed
+     * @return ExceptionResponse|Response
+     *
+     * @phpstan-return ($throwException is false ? ExceptionResponse|Response : Response)
      */
-    public function awaitResponse($timeout = 10, $throwException = false): ResponseContract
+    public function awaitResponse(int $timeout = 10, bool $throwException = false): ResponseContract
     {
         return LaravelJobResponse::throwExceptionOnFailure($throwException)->awaitResponse($this, $timeout);
     }

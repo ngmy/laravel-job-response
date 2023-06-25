@@ -18,11 +18,8 @@ class TestLongRunningJob implements ShouldQueue, JobCanRespond
     use InteractsWithQueue;
     use Queueable;
 
-    public $sleep;
-
-    public function __construct($sleep = 2)
+    public function __construct(private readonly int $sleep = 2)
     {
-        $this->sleep = $sleep;
     }
 
     public function handle(): void
