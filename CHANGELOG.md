@@ -4,7 +4,7 @@ All notable changes to `laravel-job-response` will be documented in this file
 
 ## 0.1.3 - 0.1.4 - 2023-06-19
 
-- Add compatibility with Laravel 9.x or higher. Require PHP 8.1 or higher.
+- Add compatibility with Laravel 9 and 10. Drop compatibility with Laravel 7. Require PHP 8.1 or higher.
 
 ## 0.1.2 - 0.1.3 - 2020-06-11
 
