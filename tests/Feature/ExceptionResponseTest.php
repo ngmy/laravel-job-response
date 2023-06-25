@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Feature;
 
+use Illuminate\Config\Repository;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\JobFailedException;
@@ -31,13 +33,13 @@ final class ExceptionResponseTest extends TestCase
         $job = new TestExceptionJob();
         $job->prepareResponse();
 
-        app(Dispatcher::class)->dispatch($job);
+        App::make(Dispatcher::class)->dispatch($job);
 
         Artisan::call('queue:work', [
             '--once' => 1,
         ]);
 
-        $response = app(TransportContract::class)->throwExceptionOnFailure(true)->awaitResponse($job->getResponseIdent(), 1);
+        App::make(TransportContract::class)->throwExceptionOnFailure(true)->awaitResponse($job->getResponseIdent(), 1);
     }
 
     public function testManuallyFailedJob(): void
@@ -45,14 +47,14 @@ final class ExceptionResponseTest extends TestCase
         $job = new TestManuallyFailedJob();
         $job->prepareResponse();
 
-        app(Dispatcher::class)->dispatch($job);
+        App::make(Dispatcher::class)->dispatch($job);
 
         Artisan::call('queue:work', [
             '--once' => 1,
         ]);
 
-        /** @var ExceptionResponse $response */
-        $response = app(TransportContract::class)->throwExceptionOnFailure(false)->awaitResponse($job->getResponseIdent(), 1);
+        $response = App::make(TransportContract::class)->throwExceptionOnFailure(false)->awaitResponse($job->getResponseIdent(), 1);
+        \assert($response instanceof ExceptionResponse);
 
         self::assertInstanceOf(ExceptionResponse::class, $response);
         self::assertNull($response->getMessage());
@@ -64,18 +66,21 @@ final class ExceptionResponseTest extends TestCase
             $job = new TestExceptionJob();
             $job->prepareResponse();
 
-            app(Dispatcher::class)->dispatch($job);
+            App::make(Dispatcher::class)->dispatch($job);
 
             Artisan::call('queue:work', [
                 '--once' => 1,
             ]);
 
-            $response = app(TransportContract::class)->throwExceptionOnFailure(true)->awaitResponse($job->getResponseIdent(), 1);
+            App::make(TransportContract::class)->throwExceptionOnFailure(true)->awaitResponse($job->getResponseIdent(), 1);
         } catch (JobFailedException $e) {
             $exceptionResponse = $e->getExceptionResponse();
+            self::assertInstanceOf(ExceptionResponse::class, $exceptionResponse);
+
+            return;
         }
 
-        self::assertInstanceOf(ExceptionResponse::class, $exceptionResponse);
+        self::fail('JobFailedException was not thrown.');
     }
 
     /**
@@ -86,14 +91,14 @@ final class ExceptionResponseTest extends TestCase
         $job = new TestExceptionJob();
         $job->prepareResponse();
 
-        app(Dispatcher::class)->dispatch($job);
+        App::make(Dispatcher::class)->dispatch($job);
 
         Artisan::call('queue:work', [
             '--once' => 1,
         ]);
 
-        /** @var ExceptionResponse $response */
-        $response = app(TransportContract::class)->throwExceptionOnFailure(false)->awaitResponse($job->getResponseIdent(), 1);
+        $response = App::make(TransportContract::class)->throwExceptionOnFailure(false)->awaitResponse($job->getResponseIdent(), 1);
+        \assert($response instanceof ExceptionResponse);
         self::assertInstanceOf(ExceptionResponse::class, $response);
         self::assertSame('TestException', $response->getExceptionBaseName());
         self::assertSame(TestException::class, $response->getExceptionClass());
@@ -108,20 +113,22 @@ final class ExceptionResponseTest extends TestCase
         $this->expectException(JobFailedException::class);
         $job = new TestExceptionJob();
         $job->prepareResponse($id);
-        app(Dispatcher::class)->dispatch($job);
+        App::make(Dispatcher::class)->dispatch($job);
 
         Artisan::call('queue:work', [
             '--once' => 1,
         ]);
 
         LaravelJobResponse::throwExceptionOnFailure(true);
-        $response = LaravelJobResponse::awaitResponse($job, 1);
+        LaravelJobResponse::awaitResponse($job, 1);
     }
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('queue.default', 'database');
-        $app['config']->set('cache.default', 'database');
-        $app['config']->set('job-response.transport', 'cache');
+        $config = $app['config'];
+        \assert($config instanceof Repository);
+        $config->set('queue.default', 'database');
+        $config->set('cache.default', 'database');
+        $config->set('job-response.transport', 'cache');
     }
 }

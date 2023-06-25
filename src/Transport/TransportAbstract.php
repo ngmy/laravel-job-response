@@ -6,6 +6,7 @@ namespace Williamjulianvicary\LaravelJobResponse\Transport;
 
 use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\JobFailedException;
+use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
 use Williamjulianvicary\LaravelJobResponse\Response;
 use Williamjulianvicary\LaravelJobResponse\ResponseCollection;
 use Williamjulianvicary\LaravelJobResponse\ResponseContract;
@@ -25,22 +26,28 @@ abstract class TransportAbstract
      */
     public bool $shouldThrowException = false;
 
-    abstract public function awaitResponse(string $id, int $timeout): ResponseContract;
+    /**
+     * @param array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}} $data
+     *
+     * @throws TimeoutException
+     */
+    abstract public function sendResponse(string $id, array $data): void;
 
-    abstract public function awaitResponses(string $id, int $expectedResponses, int $timeout): ResponseCollection;
-
-    abstract public function sendResponse(string $id, $data);
-
-    public function throwExceptionOnFailure(bool $flag = false): self
+    public function throwExceptionOnFailure(bool $flag = false): static
     {
         $this->shouldThrowException = $flag;
 
         return $this;
     }
 
-    /**
-     * @param \Throwable $exception
-     */
     public function handleFailure(string $id, ?\Throwable $exception = null): void
     {
         $exceptionData = $exception instanceof \Throwable ? $this->exceptionToArray($exception) : [];
@@ -48,20 +55,28 @@ abstract class TransportAbstract
         $this->sendResponse($id, $data);
     }
 
-    public function respond(string $id, $data): void
+    public function respond(string $id, mixed $data): void
     {
         $data = ['response' => $data];
         $this->sendResponse($id, $data);
     }
 
     /**
-     * @param mixed $responseData
+     * @param array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}} $responseData
      *
-     * @return ExceptionResponse|Response|ResponseContract
+     * @return ExceptionResponse|Response
      *
      * @throws JobFailedException
      */
-    protected function createResponse($responseData)
+    protected function createResponse(array $responseData): ResponseContract
     {
         $response = ResponseFactory::create($responseData);
         if ($this->shouldThrowException && $response instanceof ExceptionResponse) {
@@ -72,12 +87,23 @@ abstract class TransportAbstract
     }
 
     /**
-     * @param mixed $responses
+     * @param list<array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}}> $responses
+     *
+     * @return ResponseCollection<array-key, ExceptionResponse|Response>
      *
      * @throws JobFailedException
      */
-    protected function createResponses($responses): ResponseCollection
+    protected function createResponses(array $responses): ResponseCollection
     {
+        /** @var ResponseCollection<array-key, ExceptionResponse|Response> $collection */
         $collection = new ResponseCollection();
         foreach ($responses as $response) {
             $collection->push($this->createResponse($response));
@@ -86,6 +112,17 @@ abstract class TransportAbstract
         return $collection;
     }
 
+    /**
+     * @return array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }
+     */
     private function exceptionToArray(\Throwable $exception): array
     {
         return [

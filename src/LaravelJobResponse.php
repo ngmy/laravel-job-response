@@ -13,6 +13,12 @@ class LaravelJobResponse
 {
     public bool $throwExceptionOnFailure = false;
 
+    public function __construct(
+        private readonly Dispatcher $dispatcher,
+        private readonly TransportContract $transport,
+    ) {
+    }
+
     public function generateIdent(string $class = null): string
     {
         return ($class ?? self::class).':rpc:'.Str::random(80);
@@ -25,29 +31,37 @@ class LaravelJobResponse
         return $this;
     }
 
+    /**
+     * @return ExceptionResponse|Response
+     */
     public function awaitResponse(JobCanRespond $job, int $timeout = 10): ResponseContract
     {
         // Dispatch the job
         $job->prepareResponse();
-        app(Dispatcher::class)->dispatch($job);
+        $this->dispatcher->dispatch($job);
 
-        return app(TransportContract::class)
+        return $this->transport
             ->throwExceptionOnFailure($this->throwExceptionOnFailure)
             ->awaitResponse($job->getResponseIdent(), $timeout)
         ;
     }
 
+    /**
+     * @param JobCanRespond[] $jobs
+     *
+     * @return ResponseCollection<array-key, ExceptionResponse|Response>
+     */
     public function awaitResponses(array $jobs, int $timeout = 10): ResponseCollection
     {
         $queueIdent = $this->generateIdent();
 
         $jobCollection = collect($jobs);
-        $jobCollection->each(static function (JobCanRespond $job) use ($queueIdent): void {
+        $jobCollection->each(function (JobCanRespond $job) use ($queueIdent): void {
             $job->prepareResponse($queueIdent);
-            app(Dispatcher::class)->dispatch($job);
+            $this->dispatcher->dispatch($job);
         });
 
-        return app(TransportContract::class)
+        return $this->transport
             ->throwExceptionOnFailure($this->throwExceptionOnFailure)
             ->awaitResponses($queueIdent, $jobCollection->count(), $timeout)
         ;

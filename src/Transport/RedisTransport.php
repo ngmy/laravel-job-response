@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Williamjulianvicary\LaravelJobResponse\Transport;
 
 use Illuminate\Redis\Connections\Connection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redis;
-use Williamjulianvicary\LaravelJobResponse\Exceptions\JobFailedException;
+use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
+use Williamjulianvicary\LaravelJobResponse\Response;
 use Williamjulianvicary\LaravelJobResponse\ResponseCollection;
 use Williamjulianvicary\LaravelJobResponse\ResponseContract;
 
@@ -17,16 +19,11 @@ class RedisTransport extends TransportAbstract implements TransportContract
 
     public function __construct(string $connection = null)
     {
-        $connection ??= (string) config('job-response.redis.connection');
+        \assert(\is_string(Config::get('job-response.redis.connection')) || null === Config::get('job-response.redis.connection'));
+        $connection ??= (string) Config::get('job-response.redis.connection');
         $this->connection = Redis::connection($connection);
     }
 
-    /**
-     * @return mixed
-     *
-     * @throws TimeoutException
-     * @throws JobFailedException
-     */
     public function awaitResponse(string $id, int $timeout): ResponseContract
     {
         [$queueId, $response] = $this->connection->blpop($id, $timeout);
@@ -38,20 +35,13 @@ class RedisTransport extends TransportAbstract implements TransportContract
         return $this->createResponse($this->fromStorage($response));
     }
 
-    /**
-     * @param string $id                the ID to lookup the job (should match the job ident)
-     * @param int    $expectedResponses number of responses to expect
-     * @param int    $timeout           timeout for the request
-     *
-     * @throws TimeoutException
-     * @throws JobFailedException
-     */
     public function awaitResponses(string $id, int $expectedResponses, int $timeout): ResponseCollection
     {
-        $responses = [];
+        /** @var ResponseCollection<array-key, ExceptionResponse|Response> $responses */
+        $responses = new ResponseCollection();
         $timeoutExpiresAt = now()->addSeconds($timeout);
         while (true) {
-            if (\count($responses) >= $expectedResponses) {
+            if ($responses->count() >= $expectedResponses) {
                 break;
             }
 
@@ -59,30 +49,51 @@ class RedisTransport extends TransportAbstract implements TransportContract
                 throw new TimeoutException('Timed out waiting for response');
             }
 
-            $responses[] = $this->awaitResponse($id, $timeout);
+            $responses->push($this->awaitResponse($id, $timeout));
         }
 
-        return new ResponseCollection($responses);
+        return $responses;
     }
 
-    public function sendResponse(string $id, $data): void
+    public function sendResponse(string $id, array $data): void
     {
         $this->connection->rpush($id, $this->forStorage($data));
         $this->connection->expire($id, $this->cacheTtl);
     }
 
-    public function forStorage($data): string
+    /**
+     * @param array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}} $data
+     */
+    public function forStorage(array $data): string
     {
         return serialize($data);
     }
 
     /**
-     * @return mixed
+     * @return array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}}
      */
-    public function fromStorage(string $data)
+    public function fromStorage(string $data): array
     {
         // No safety added, this is an internal-only serialization and should not be an attack vector.
         // @noinspection UnserializeExploitsInspection
+        \assert(\is_array(unserialize($data)));
+
         return unserialize($data);
     }
 }

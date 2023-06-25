@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Feature;
 
+use Illuminate\Config\Repository;
 use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
 use Williamjulianvicary\LaravelJobResponse\Response;
 use Williamjulianvicary\LaravelJobResponse\ResponseCollection;
@@ -40,16 +41,18 @@ final class FacadeMethodTest extends TestCase
     public function testAwaitResponses(): void
     {
         $jobs = [new TestJob(), new TestJob()];
-        $response = LaravelJobResponse::awaitResponses($jobs, 10);
+        $responses = LaravelJobResponse::awaitResponses($jobs, 10);
 
-        self::assertInstanceOf(ResponseCollection::class, $response);
-        self::assertCount(2, $response);
+        self::assertInstanceOf(ResponseCollection::class, $responses);
+        self::assertCount(2, $responses);
     }
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('queue.default', 'sync');
-        $app['config']->set('cache.default', 'array');
-        $app['config']->set('job-response.transport', 'cache');
+        $config = $app['config'];
+        \assert($config instanceof Repository);
+        $config->set('queue.default', 'sync');
+        $config->set('cache.default', 'array');
+        $config->set('job-response.transport', 'cache');
     }
 }

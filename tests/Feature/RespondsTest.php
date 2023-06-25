@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Williamjulianvicary\LaravelJobResponse\Tests\Feature;
 
+use Illuminate\Config\Repository;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException;
-use Williamjulianvicary\LaravelJobResponse\LaravelJobResponse;
+use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
+use Williamjulianvicary\LaravelJobResponse\Response;
 use Williamjulianvicary\LaravelJobResponse\Tests\Data\TestExceptionJob;
 use Williamjulianvicary\LaravelJobResponse\Tests\Data\TestJob;
 use Williamjulianvicary\LaravelJobResponse\Tests\Data\TestLongRunningJob;
@@ -27,13 +30,15 @@ final class RespondsTest extends TestCase
         $job = new TestJob();
         $job->prepareResponse();
 
-        app(Dispatcher::class)->dispatch($job);
+        App::make(Dispatcher::class)->dispatch($job);
 
         Artisan::call('queue:work', [
             '--once' => 1,
         ]);
 
-        $response = app(TransportContract::class)->awaitResponse($job->getResponseIdent(), 1);
+        $response = App::make(TransportContract::class)->awaitResponse($job->getResponseIdent(), 1);
+        \assert($response instanceof Response);
+        self::assertInstanceOf(Response::class, $response);
         self::assertTrue($response->getData());
     }
 
@@ -45,25 +50,26 @@ final class RespondsTest extends TestCase
         $job = new TestExceptionJob();
         $job->prepareResponse();
 
-        app(Dispatcher::class)->dispatch($job);
+        App::make(Dispatcher::class)->dispatch($job);
 
         Artisan::call('queue:work', [
             '--once' => 1,
         ]);
 
-        $response = app(TransportContract::class)->awaitResponse($job->getResponseIdent(), 2);
+        $response = App::make(TransportContract::class)->awaitResponse($job->getResponseIdent(), 2);
+        \assert($response instanceof ExceptionResponse);
 
         self::assertInstanceOf(ExceptionResponse::class, $response);
     }
 
     public function testThreeResponses(): void
     {
-        $ident = app(LaravelJobResponse::class)->generateIdent();
+        $ident = LaravelJobResponse::generateIdent();
 
         $jobs = collect([new TestJob(), new TestJob(), new TestJob()]);
         $jobs->each(function (TestJob $job) use ($ident): void {
             $job->prepareResponse($ident);
-            app(Dispatcher::class)->dispatch($job);
+            App::make(Dispatcher::class)->dispatch($job);
         });
 
         Artisan::call('queue:work', [
@@ -78,9 +84,9 @@ final class RespondsTest extends TestCase
             '--once' => 1,
         ]);
 
-        $response = app(TransportContract::class)->awaitResponses($ident, 3, 5);
+        $responses = App::make(TransportContract::class)->awaitResponses($ident, 3, 5);
 
-        self::assertCount(3, $response);
+        self::assertCount(3, $responses);
     }
 
     public function testJobTimeOut(): void
@@ -89,19 +95,21 @@ final class RespondsTest extends TestCase
         $job = new TestLongRunningJob();
         $job->prepareResponse();
 
-        app(Dispatcher::class)->dispatch($job);
+        App::make(Dispatcher::class)->dispatch($job);
 
         // Note: We're mocking a long-running job here by not actually running the queue.
         // As the queue does not finish, it is impossible for the job to respond within the timeout.
         // This is to avoid the lack of  multi-threading in PHPUNIT (i.e we cannot run the await before running the queue worker).
 
-        app(TransportContract::class)->awaitResponse($job->getResponseIdent(), 1);
+        App::make(TransportContract::class)->awaitResponse($job->getResponseIdent(), 1);
     }
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('queue.default', 'database');
-        $app['config']->set('cache.default', 'database');
-        $app['config']->set('job-response.transport', 'cache');
+        $config = $app['config'];
+        \assert($config instanceof Repository);
+        $config->set('queue.default', 'database');
+        $config->set('cache.default', 'database');
+        $config->set('job-response.transport', 'cache');
     }
 }

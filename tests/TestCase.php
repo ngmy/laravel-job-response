@@ -21,6 +21,7 @@ abstract class TestCase extends OrchestraTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        \assert(false !== realpath(__DIR__.'/database/migrations'));
         $this->loadMigrationsFrom(realpath(__DIR__.'/database/migrations'));
     }
 
@@ -29,7 +30,7 @@ abstract class TestCase extends OrchestraTestCase
      *
      * @param mixed $app
      */
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             LaravelJobResponseServiceProvider::class,

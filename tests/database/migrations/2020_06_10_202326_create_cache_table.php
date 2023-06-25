@@ -19,7 +19,7 @@ class CreateCacheTable extends Migration
             $table->integer('expiration');
         });
 
-        Schema::create('cache_locks', function ($table): void {
+        Schema::create('cache_locks', function (Blueprint $table): void {
             $table->string('key')->primary();
             $table->string('owner');
             $table->integer('expiration');
