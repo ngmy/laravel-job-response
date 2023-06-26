@@ -2,10 +2,9 @@
     "name": "ngmy/laravel-job-response",
     "description": "Add responses to Laravel Jobs - allowing your application to wait for a response from a dispatched job.",
     "keywords": [
-        "williamjulianvicary",
         "laravel-job-response"
     ],
-    "homepage": "https://github.com/williamjulianvicary/laravel-job-response",
+    "homepage": "https://github.com/ngmy/laravel-job-response",
     "license": "MIT",
     "type": "library",
     "authors": [
