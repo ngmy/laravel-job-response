@@ -20,7 +20,20 @@ use Williamjulianvicary\LaravelJobResponse\Transport\TransportContract;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \Williamjulianvicary\LaravelJobResponse\CanRespond
+ * @covers \Williamjulianvicary\LaravelJobResponse\ExceptionResponse
+ * @covers \Williamjulianvicary\LaravelJobResponse\Exceptions\JobFailedException
+ * @covers \Williamjulianvicary\LaravelJobResponse\Exceptions\TimeoutException
+ * @covers \Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse
+ * @covers \Williamjulianvicary\LaravelJobResponse\LaravelJobResponse
+ * @covers \Williamjulianvicary\LaravelJobResponse\LaravelJobResponseServiceProvider
+ * @covers \Williamjulianvicary\LaravelJobResponse\Response
+ * @covers \Williamjulianvicary\LaravelJobResponse\ResponseCollection
+ * @covers \Williamjulianvicary\LaravelJobResponse\ResponseFactory
+ * @covers \Williamjulianvicary\LaravelJobResponse\Transport\CacheTransport
+ * @covers \Williamjulianvicary\LaravelJobResponse\Transport\RedisTransport
+ * @covers \Williamjulianvicary\LaravelJobResponse\Transport\TransportAbstract
+ * @covers \Williamjulianvicary\LaravelJobResponse\TransportFactory
  */
 final class ExceptionResponseTest extends TestCase
 {
