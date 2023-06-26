@@ -96,7 +96,7 @@ class Service
     public function test(): void
     {
         $jobs = [new TestJob(), new TestJob()];
-        /** @var ResponseCollection<array-key, ExceptionResponse|Response> */
+        /** @var ResponseCollection<array-key, ExceptionResponse|Response> $responses */
         $responses = LaravelJobResponse::awaitResponses($jobs);
 
         foreach ($responses as $response) {
