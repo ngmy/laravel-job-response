@@ -1,10 +1,13 @@
 # Laravel Job Response - Making your jobs respond
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/williamjulianvicary/laravel-job-response.svg?style=flat-square)](https://packagist.org/packages/williamjulianvicary/laravel-job-response)
-[![Build Status](https://img.shields.io/travis/williamjulianvicary/laravel-job-response/master.svg?style=flat-square)](https://travis-ci.org/williamjulianvicary/laravel-job-response)
-[![Total Downloads](https://img.shields.io/packagist/dt/williamjulianvicary/laravel-job-response.svg?style=flat-square)](https://packagist.org/packages/williamjulianvicary/laravel-job-response)
+[![Latest Stable Version](https://img.shields.io/packagist/v/ngmy/laravel-job-response.svg?style=flat-square&label=stable)](https://packagist.org/packages/ngmy/laravel-job-response)
+[![Test Status](https://img.shields.io/github/actions/workflow/status/ngmy/laravel-job-response/test.yml?style=flat-square&label=test)](https://github.com/ngmy/laravel-job-response/actions/workflows/test.yml)
+[![Lint Status](https://img.shields.io/github/actions/workflow/status/ngmy/laravel-job-response/lint.yml?style=flat-square&label=lint)](https://github.com/ngmy/laravel-job-response/actions/workflows/lint.yml)
+[![Code Coverage](https://img.shields.io/coverallsCoverage/github/ngmy/laravel-job-response?style=flat-square)](https://coveralls.io/github/ngmy/laravel-job-response)
+[![Total Downloads](https://img.shields.io/packagist/dt/ngmy/laravel-job-response.svg?style=flat-square)](https://packagist.org/packages/ngmy/laravel-job-response)
 
-Have you ever needed to run a Laravel job (or multiple jobs), wait for the response and then use that response? This is exactly the functionality this package provides. 
+Have you ever needed to run a Laravel job (or multiple jobs), wait for the response and then use that response? This is
+exactly the functionality this package provides.
 
 ## Installation
 
@@ -17,13 +20,13 @@ composer require ngmy/laravel-job-response
 ## Requirements
 
 - PHP >= 8.1
-- Laravel >= 9.0 (While not tested on prior versions may work)
+- Laravel >= 9.0
 
 ## Usage
 
 In your `Job` use the `CanRespond` trait and add implement the `JobCanRespond` contract.
 
-``` php
+```php
 <?php
 
 namespace App\Jobs;
@@ -32,19 +35,15 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Williamjulianvicary\LaravelJobResponse\CanRespond;
 use Williamjulianvicary\LaravelJobResponse\Contracts\JobCanRespond;
 
 class TestJob implements ShouldQueue, JobCanRespond
 {
-    use InteractsWithQueue, Queueable, Dispatchable, CanRespond;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, CanRespond;
 
-    public function __construct()
-    {
-
-    }
-
-    public function handle()
+    public function handle(): void
     {
         $this->respond('Success');
     }
@@ -53,132 +52,150 @@ class TestJob implements ShouldQueue, JobCanRespond
 
 Then in your Service/Controller/elsewhere, await a response from your job.
 
-``` php
+```php
 <?php
 
 namespace App\Services;
 
+use App\Jobs\TestJob;
+use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
+use Williamjulianvicary\LaravelJobResponse\Response;
+
 class Service
 {
-    public function test()
+    public function test(): void
     {
         $job = new TestJob();
+        /** @var ExceptionResponse|Response $response */
         $response = $job->awaitResponse();
-        
-        // $response is an instance of Response or ExceptionResponse
-        $data = $response->getData(); // 'Success'
-        // or 
-        $exception = $response; // JobFailedException
+
+        if ($response instanceof ExceptionResponse) {
+            echo $response->getMessage().PHP_EOL; // The exception message string thrown by the job.
+        } else {
+            echo $response->getData().PHP_EOL; // 'Success'
+        }
     }
 }
 ```
 
-Or alternatively, run multiple jobs and await the responses
-``` php
+Or alternatively, run multiple jobs and await the responses.
+
+```php
 <?php
 
 namespace App\Services;
-namespace Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
+
+use App\Jobs\TestJob;
+use Williamjulianvicary\LaravelJobResponse\ExceptionResponse;
+use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
+use Williamjulianvicary\LaravelJobResponse\Response;
+use Williamjulianvicary\LaravelJobResponse\ResponseCollection;
 
 class Service
 {
-    public function test()
+    public function test(): void
     {
         $jobs = [new TestJob(), new TestJob()];
-        $responses = LaravelJobResponse::awaitResponses($jobs); // ResponseCollection
-        
+        /** @var ResponseCollection<array-key, ExceptionResponse|Response> */
+        $responses = LaravelJobResponse::awaitResponses($jobs);
+
         foreach ($responses as $response) {
             if ($response instanceof ExceptionResponse) {
-                echo "Exception: " . $response->getMessage() . "\n";
+                echo $response->getMessage().PHP_EOL;
             } else {
-                echo "Response: " . $response->getData() . "\n";
+                echo $response->getData().PHP_EOL;
             }
         }
     }
-}   
+}
 ```
 
 ### Responses
 
 By default, the package responds in three ways:
 
-- `ResponseCollection` - When multiple responses are expected, a ResponseCollection will be 
-returned containing `Response` and/or `ExceptionResponse` objects.
+- `ResponseCollection` - When multiple responses are expected, a ResponseCollection will be returned containing
+  `Response` and/or `ExceptionResponse` objects.
 - `Response` - A successful response object.
 - `ExceptionResponse` - When a job fails the exception is caught and passed back.
 
-### (Optional) Handling Exceptions 
+### (Optional) Handling Exceptions
 
-By default a `ExceptionResponse` object is created with a `$exceptionResponse->getException()` method available to allow you to
-review the exception thrown from the Job. However, this can lead to some extra boilerplate code to handle this, so instead we've
-an optional method available that will re-throw these exceptions.
+By default a `ExceptionResponse` object is created. However, this can lead to some extra boilerplate code to handle
+this, so instead we've an optional method available that will re-throw these exceptions.
 
-To enable this, use the Facade to update the `throwExceptionsOnFailures` flag
+To enable this, use the Facade to update the `throwExceptionOnFailure` flag
+
 ```php
 use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
-[...]
-LaravelJobResponse::throwExceptionsOnFailures(true);
+
+LaravelJobResponse::throwExceptionOnFailure(true);
 ```
 
 Now whenever a await is issued, if an exception is encountered from the job, a `JobFailedException` will be raised:
+
 ```php
 <?php
 
 namespace App\Services;
-use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
+
+use App\Jobs\TestJob;
 use Williamjulianvicary\LaravelJobResponse\Exceptions\JobFailedException;
+use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
 
 class Service
 {
-    public function test()
+    public function test(): void
     {
         $jobs = [new TestJob(), new TestJob()];
         try {
-           $responses = LaravelJobResponse::awaitResponses($jobs);
+            $responses = LaravelJobResponse::awaitResponses($jobs);
         } catch (JobFailedException $exception) {
             // One of the jobs failed.
             $exception->getTrace(); // The exception trace string thrown by the job.
-        }       
-       
+        }
     }
-}  
+}
 ```
 
 ### Methods
+
 ```php
-<?php
 // Methods available on your jobs
 
 // Await a response for this job, optionally accepts a timeout and bool whether a exception should be raised if the job fails.
 // Responds with either Response or ExceptionResponse objects.
-$job->awaitResponse($timeout = 10, $throwException = false);  
+$job->awaitResponse(int $timeout = 10, bool $throwException = false): ExceptionResponse|Response;
 
-$job->respond($mixed); // Should be used within the handle() method of the job to respond appropriately.
-$job->respondWithException(\Throwable); // If you override the failed() method, this method responds with an exception.
+// Should be used within the handle() method of the job to respond appropriately.
+$job->respond(mixed $data): void;
+
+// If you override the failed() method, this method responds with an exception.
+$job->respondWithException(?\Throwable $exception = null): void;
 
 // Facade methods
 
 // Await a response for the given job.
-LaravelJobResponse::awaitResponse(JobCanRespond $job, $timeout=10);
+LaravelJobResponse::awaitResponse(JobCanRespond $job, int $timeout = 10): ExceptionResponse|Response;
 
 // Await responses from the provided job array.
-LaravelJobResponse::awaitResponses(array $jobs, $timeout=10);
+LaravelJobResponse::awaitResponses(JobCanRespond[] $jobs, int $timeout = 10): ResponseCollection<array-key, ExceptionResponse|Response>;
 
 // Change how exceptions are handled (see above).
-LaravelJobResponse::throwExceptionOnFailure(false);
+LaravelJobResponse::throwExceptionOnFailure(bool $flag = false): self;
 ```
 
 ### Troubleshooting
 
 There are a few quirks within Laravel that you may run into with this package.
 
-- When running with a `sync` driver, Exceptions will not be caught - this is because Laravel does not natively catch them with the Sync driver
-and it is impossible for our package to pick them up. If you need to handle exceptions with this driver, use `$job->fail($exception);` instead.
-
+- When running with a `sync` driver, Exceptions will not be caught - this is because Laravel does not natively catch
+  them with the Sync driver and it is impossible for our package to pick them up. If you need to handle exceptions with
+  this driver, use `$job->fail($exception);` instead.
 
 ### Testing
 
-``` bash
+```bash
 composer test
 ```
 
@@ -193,7 +210,8 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 ## Credits
 
 - [William Julian-Vicary](https://github.com/williamjulianvicary)
-- [All Contributors](../../contributors)
+- [Yuta Nagamiya](https://github.com/ngmy)
+- [All Contributors](https://github.com/ngmy/laravel-job-response/contributors)
 
 ## License
 
