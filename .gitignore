@@ -6,7 +6,9 @@ coverage
 /.env
 
 # Composer
+/composer.lock
 /vendor/
+/vendor-bin/**/composer.lock
 /vendor-bin/**/vendor/
 
 # PHPUnit
