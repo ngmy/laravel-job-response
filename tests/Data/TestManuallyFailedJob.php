@@ -18,10 +18,6 @@ class TestManuallyFailedJob implements ShouldQueue, JobCanRespond
     use InteractsWithQueue;
     use Queueable;
 
-    public function __construct()
-    {
-    }
-
     public function handle(): void
     {
         $this->fail();
