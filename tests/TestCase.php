@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Williamjulianvicary\LaravelJobResponse\Tests;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-// use Orchestra\Database\ConsoleServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Williamjulianvicary\LaravelJobResponse\LaravelJobResponseServiceProvider;
 
