@@ -13,6 +13,10 @@
             "name": "William Julian-Vicary",
             "email": "will@3whitehats.com",
             "role": "Developer"
+        },
+        {
+            "name": "Yuta Nagamiya",
+            "email": "y.nagamiya@gmail.com"
         }
     ],
     "require": {
