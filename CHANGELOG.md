@@ -2,6 +2,11 @@
 
 All notable changes to `laravel-job-response` will be documented in this file
 
+## 0.1.4 - 0.1.5 - 2023-06-27
+
+- Fix based on PHPStan errors.
+- Switch the required Redis client from Predis to PhpRedis.
+
 ## 0.1.3 - 0.1.4 - 2023-06-19
 
 - Add compatibility with Laravel 9 and 10. Drop compatibility with Laravel 7. Require PHP 8.1 or higher.
