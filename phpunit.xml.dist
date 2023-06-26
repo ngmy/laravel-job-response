@@ -30,11 +30,7 @@
         <junit outputFile="build/report.junit.xml"/>
     </logging>
     <php>
-        <env name="REDIS_CLIENT" value="phpredis"/>
-        <env name="DB_HOST" value="127.0.0.1"/>
         <env name="DB_DATABASE" value="job_response"/>
         <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value=""/>
-        <env name="APP_KEY" value="base64:W7fwlse03zHbUdbgeplikRxEh3HTMrhWS+dQzOJDDb0="/>
     </php>
 </phpunit>
