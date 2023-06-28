@@ -10,7 +10,7 @@ use Williamjulianvicary\LaravelJobResponse\Transport\TransportContract;
 
 trait CanRespond
 {
-    public string $responseIdent;
+    private string $responseIdent;
 
     public function prepareResponse(?string $id = null): self
     {

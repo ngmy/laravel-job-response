@@ -15,7 +15,7 @@ use Williamjulianvicary\LaravelJobResponse\ResponseContract;
 
 class RedisTransport extends TransportAbstract implements TransportContract
 {
-    public Connection $connection;
+    private Connection $connection;
 
     public function __construct(string $connection = null)
     {
@@ -72,7 +72,7 @@ class RedisTransport extends TransportAbstract implements TransportContract
      *     line: int,
      * }|array{}} $data
      */
-    public function forStorage(array $data): string
+    private function forStorage(array $data): string
     {
         return serialize($data);
     }
@@ -88,7 +88,7 @@ class RedisTransport extends TransportAbstract implements TransportContract
      *     line: int,
      * }|array{}}
      */
-    public function fromStorage(string $data): array
+    private function fromStorage(string $data): array
     {
         // No safety added, this is an internal-only serialization and should not be an attack vector.
         // @noinspection UnserializeExploitsInspection

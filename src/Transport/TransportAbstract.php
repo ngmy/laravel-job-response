@@ -24,7 +24,7 @@ abstract class TransportAbstract
      * By default if an exception occurs the exception will be passed as a ExceptionResponse object, however if this
      * flag is true, an exception will be raised instead.
      */
-    public bool $shouldThrowException = false;
+    private bool $shouldThrowException = false;
 
     /**
      * @param array{response?: mixed, exception?: array{

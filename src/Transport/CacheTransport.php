@@ -53,44 +53,6 @@ class CacheTransport extends TransportAbstract implements TransportContract
         }
     }
 
-    /**
-     * @return list<array{response?: mixed, exception?: array{
-     *     exception_class: string,
-     *     exception_basename: string,
-     *     message: string,
-     *     file: string,
-     *     code: int,
-     *     trace: string,
-     *     line: int,
-     * }|array{}}>
-     *
-     * @throws TimeoutException
-     */
-    public function _awaitResponses(string $id, int $timeout, int $expectedResponses = 1): array
-    {
-        $timeoutAt = now()->addSeconds($timeout);
-
-        $responses = [];
-        while (true) {
-            if ($timeoutAt < now()) {
-                throw new TimeoutException('Timed out while waiting for a response');
-            }
-
-            if ($responses = $this->cacheStore->get($id)) {
-                \assert(\is_array($responses));
-                if (\count($responses) >= $expectedResponses) {
-                    break;
-                }
-            }
-
-            usleep($this->millisecondPollWait * 1000);
-        }
-
-        \assert(\is_array($responses));
-
-        return $responses;
-    }
-
     public function awaitResponse(string $id, int $timeout): ResponseContract
     {
         $responses = $this->_awaitResponses($id, $timeout, 1);
@@ -122,5 +84,43 @@ class CacheTransport extends TransportAbstract implements TransportContract
         } finally {
             $lock->release();
         }
+    }
+
+    /**
+     * @return list<array{response?: mixed, exception?: array{
+     *     exception_class: string,
+     *     exception_basename: string,
+     *     message: string,
+     *     file: string,
+     *     code: int,
+     *     trace: string,
+     *     line: int,
+     * }|array{}}>
+     *
+     * @throws TimeoutException
+     */
+    private function _awaitResponses(string $id, int $timeout, int $expectedResponses = 1): array
+    {
+        $timeoutAt = now()->addSeconds($timeout);
+
+        $responses = [];
+        while (true) {
+            if ($timeoutAt < now()) {
+                throw new TimeoutException('Timed out while waiting for a response');
+            }
+
+            if ($responses = $this->cacheStore->get($id)) {
+                \assert(\is_array($responses));
+                if (\count($responses) >= $expectedResponses) {
+                    break;
+                }
+            }
+
+            usleep($this->millisecondPollWait * 1000);
+        }
+
+        \assert(\is_array($responses));
+
+        return $responses;
     }
 }

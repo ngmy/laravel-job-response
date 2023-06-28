@@ -11,7 +11,7 @@ use Williamjulianvicary\LaravelJobResponse\Transport\TransportContract;
 
 class LaravelJobResponse
 {
-    public bool $throwExceptionOnFailure = false;
+    private bool $throwExceptionOnFailure = false;
 
     public function __construct(
         private readonly Dispatcher $dispatcher,
