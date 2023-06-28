@@ -11,7 +11,7 @@ exactly the functionality this package provides.
 
 ## Installation
 
-You can install the package via composer:
+You can install the package via Composer:
 
 ```bash
 composer require ngmy/laravel-job-response
@@ -24,7 +24,7 @@ composer require ngmy/laravel-job-response
 
 ## Usage
 
-In your `Job` use the `CanRespond` trait and add implement the `JobCanRespond` contract.
+In your `Job` use the `CanRespond` trait and add implement the `JobCanRespond` contract:
 
 ```php
 <?php
@@ -50,7 +50,7 @@ class TestJob implements ShouldQueue, JobCanRespond
 }
 ```
 
-Then in your Service/Controller/elsewhere, await a response from your job.
+Then in your Service/Controller/elsewhere, await a response from your job:
 
 ```php
 <?php
@@ -78,7 +78,7 @@ class Service
 }
 ```
 
-Or alternatively, run multiple jobs and await the responses.
+Or alternatively, run multiple jobs and await the responses:
 
 ```php
 <?php
@@ -124,7 +124,7 @@ By default, the package responds in three ways:
 By default a `ExceptionResponse` object is created. However, this can lead to some extra boilerplate code to handle
 this, so instead we've an optional method available that will re-throw these exceptions.
 
-To enable this, use the Facade to update the `throwExceptionOnFailure` flag
+To enable this, use the Facade to update the `throwExceptionOnFailure` flag:
 
 ```php
 use Williamjulianvicary\LaravelJobResponse\Facades\LaravelJobResponse;
@@ -187,7 +187,7 @@ LaravelJobResponse::throwExceptionOnFailure(bool $flag = false): self;
 
 ### Troubleshooting
 
-There are a few quirks within Laravel that you may run into with this package.
+There are a few quirks within Laravel that you may run into with this package:
 
 - When running with a `sync` driver, Exceptions will not be caught - this is because Laravel does not natively catch
   them with the Sync driver and it is impossible for our package to pick them up. If you need to handle exceptions with
