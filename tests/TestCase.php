@@ -7,11 +7,6 @@ namespace Williamjulianvicary\LaravelJobResponse\Tests;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
-/**
- * @internal
- *
- * @coversNothing
- */
 abstract class TestCase extends OrchestraTestCase
 {
     use DatabaseTransactions;
