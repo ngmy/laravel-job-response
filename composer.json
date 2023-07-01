@@ -75,6 +75,7 @@
             "@php vendor-bin/php-cs-fixer/vendor/bin/php-cs-fixer fix --allow-risky=yes"
         ],
         "lint": [
+            "Composer\\Config::disableProcessTimeout",
             "@php vendor/bin/phpstan clear-result-cache || exit $?",
             "@php vendor/bin/phpstan analyse"
         ],
