@@ -21,11 +21,11 @@ class ResponseFactory
      */
     public static function create(array $response): ResponseContract
     {
-        if (isset($response['exception'])) {
+        if (\array_key_exists('exception', $response)) {
             return new ExceptionResponse($response['exception']);
         }
 
-        if (isset($response['response'])) {
+        if (\array_key_exists('response', $response)) {
             return new Response($response['response']);
         }
 
