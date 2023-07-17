@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-job-response` will be documented in this file
 
+## 0.4.0 - 0.5.0 - 2023-07-17
+
+- Allow null responses.
+
+## 0.3.0 - 0.4.0 - 2023-06-29
+
+- Change method and property visibility.
+
 ## 0.2.0 - 0.3.0 - 2023-06-27
 
 - Fix based on PHPStan errors.
