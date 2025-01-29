@@ -42,8 +42,8 @@ class CacheTransport extends TransportAbstract implements TransportContract
 
     public function __construct(?string $store = null)
     {
-        \assert(\is_string(Config::get('job-transport.cache.store')) || null === Config::get('job-transport.cache.store'));
-        $store ??= (string) Config::get('job-transport.cache.store');
+        \assert(\is_string(Config::get('job-response.cache.store')) || null === Config::get('job-response.cache.store'));
+        $store ??= (string) Config::get('job-response.cache.store');
         $this->cacheStore = Cache::store($store);
 
         if (!method_exists($this->cacheStore->getStore(), 'lock')) {
