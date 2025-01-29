@@ -12,6 +12,4 @@ use Illuminate\Support\Collection;
  *
  * @extends Collection<TKey, TValue>
  */
-class ResponseCollection extends Collection
-{
-}
+class ResponseCollection extends Collection {}

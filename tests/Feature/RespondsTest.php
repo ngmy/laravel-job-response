@@ -80,7 +80,7 @@ final class RespondsTest extends TestCase
         $ident = LaravelJobResponse::generateIdent();
 
         $jobs = collect([new TestJob(), new TestJob(), new TestJob()]);
-        $jobs->each(function (TestJob $job) use ($ident): void {
+        $jobs->each(static function (TestJob $job) use ($ident): void {
             $job->prepareResponse($ident);
             App::make(Dispatcher::class)->dispatch($job);
         });

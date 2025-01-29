@@ -78,8 +78,11 @@ class RedisTransport extends TransportAbstract implements TransportContract
      */
     private function fromStorage(string $data): array
     {
-        // No safety added, this is an internal-only serialization and should not be an attack vector.
-        // @noinspection UnserializeExploitsInspection
+        /**
+         * No safety added, this is an internal-only serialization and should not be an attack vector.
+         *
+         * @noinspection UnserializeExploitsInspection
+         */
         /** @var TransportResponse $unserialized */
         $unserialized = unserialize($data);
         \assert(\is_array($unserialized));

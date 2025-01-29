@@ -16,8 +16,7 @@ class LaravelJobResponse
     public function __construct(
         private readonly Dispatcher $dispatcher,
         private readonly TransportContract $transport,
-    ) {
-    }
+    ) {}
 
     public function generateIdent(?string $class = null): string
     {

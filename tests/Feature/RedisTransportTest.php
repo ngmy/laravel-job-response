@@ -51,7 +51,7 @@ final class RedisTransportTest extends TestCase
         $ident = LaravelJobResponse::generateIdent();
 
         $jobs = [new TestJob(), new TestJob()];
-        $jobs = collect($jobs)->map(function (TestJob $job) use ($ident): void {
+        $jobs = collect($jobs)->map(static function (TestJob $job) use ($ident): void {
             $job->prepareResponse($ident);
             App::make(Dispatcher::class)->dispatch($job);
         });
