@@ -19,7 +19,7 @@ class LaravelJobResponse
     ) {
     }
 
-    public function generateIdent(string $class = null): string
+    public function generateIdent(?string $class = null): string
     {
         return ($class ?? self::class).':rpc:'.Str::random(80);
     }

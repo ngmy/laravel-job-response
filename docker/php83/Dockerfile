@@ -1,4 +1,4 @@
-FROM php:8.1
+FROM php:8.3
 
 ARG USERNAME=app
 ARG GROUPNAME=app
@@ -21,5 +21,8 @@ RUN apt-get update && apt-get install -y git \
 # Add to measure code coverage.
 RUN pecl install xdebug \
     && docker-php-ext-enable xdebug
+
+# Add to silence Git permission issues in Composer.
+RUN git config --global --add safe.directory /var/www
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer

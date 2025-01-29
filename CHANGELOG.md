@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-job-response` will be documented in this file
 
+## 0.5.0 - 0.6.0 - 2025-01-29
+
+- Add compatibility with Laravel 11 and PHP 8.4. Drop compatibility with Laravel 9.
+
 ## 0.4.0 - 0.5.0 - 2023-07-17
 
 - Allow null responses.

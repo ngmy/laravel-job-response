@@ -17,7 +17,7 @@ class RedisTransport extends TransportAbstract implements TransportContract
 {
     private Connection $connection;
 
-    public function __construct(string $connection = null)
+    public function __construct(?string $connection = null)
     {
         \assert(\is_string(Config::get('job-response.redis.connection')) || null === Config::get('job-response.redis.connection'));
         $connection ??= (string) Config::get('job-response.redis.connection');
@@ -26,11 +26,15 @@ class RedisTransport extends TransportAbstract implements TransportContract
 
     public function awaitResponse(string $id, int $timeout): ResponseContract
     {
-        [$queueId, $response] = $this->connection->blpop($id, $timeout);
+        $rawBody = $this->connection->blpop($id, $timeout);
 
-        if (null === $response) {
+        if (null === $rawBody) {
             throw new TimeoutException('Redis response timed out');
         }
+
+        \assert(\is_array($rawBody));
+        [$queueId, $response] = $rawBody;
+        \assert(\is_string($response));
 
         return $this->createResponse($this->fromStorage($response));
     }
@@ -62,15 +66,7 @@ class RedisTransport extends TransportAbstract implements TransportContract
     }
 
     /**
-     * @param array{response?: mixed, exception?: array{
-     *     exception_class: string,
-     *     exception_basename: string,
-     *     message: string,
-     *     file: string,
-     *     code: int,
-     *     trace: string,
-     *     line: int,
-     * }|array{}} $data
+     * @param TransportResponse $data
      */
     private function forStorage(array $data): string
     {
@@ -78,22 +74,16 @@ class RedisTransport extends TransportAbstract implements TransportContract
     }
 
     /**
-     * @return array{response?: mixed, exception?: array{
-     *     exception_class: string,
-     *     exception_basename: string,
-     *     message: string,
-     *     file: string,
-     *     code: int,
-     *     trace: string,
-     *     line: int,
-     * }|array{}}
+     * @return TransportResponse
      */
     private function fromStorage(string $data): array
     {
         // No safety added, this is an internal-only serialization and should not be an attack vector.
         // @noinspection UnserializeExploitsInspection
-        \assert(\is_array(unserialize($data)));
+        /** @var TransportResponse $unserialized */
+        $unserialized = unserialize($data);
+        \assert(\is_array($unserialized));
 
-        return unserialize($data);
+        return $unserialized;
     }
 }

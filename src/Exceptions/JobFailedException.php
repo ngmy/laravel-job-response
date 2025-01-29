@@ -10,7 +10,7 @@ class JobFailedException extends \Exception
 {
     private readonly ExceptionResponse $exceptionResponse;
 
-    public function __construct(ExceptionResponse $exceptionResponse, string $message = '', int $code = 0, \Throwable $previous = null)
+    public function __construct(ExceptionResponse $exceptionResponse, string $message = '', int $code = 0, ?\Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
         $this->exceptionResponse = $exceptionResponse;
