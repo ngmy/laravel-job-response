@@ -30,7 +30,6 @@
         <junit outputFile="build/report.junit.xml"/>
     </logging>
     <php>
-        <env name="DB_DATABASE" value="job_response"/>
-        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_CONNECTION" value="testing"/>
     </php>
 </phpunit>

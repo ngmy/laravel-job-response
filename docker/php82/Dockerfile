@@ -10,9 +10,6 @@ RUN groupadd -g $GID $GROUPNAME \
 # Add to download Composer packages from dist.
 RUN apt-get update && apt-get install -y unzip
 
-# Add to connect to MySQL.
-RUN docker-php-ext-install pdo_mysql
-
 # Add to connect to Redis.
 RUN apt-get update && apt-get install -y git \
     && git clone https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis \
