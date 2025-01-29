@@ -1,35 +1,73 @@
-version: "3.7"
-
 services:
   app:
     build:
-      context: ./docker/php
+      context: ./docker/php81
       args:
         UID: ${APP_UID}
         GID: ${APP_GID}
     tty: true
     environment:
-      DB_HOST: db
       REDIS_HOST: redis
     volumes:
       - .:/var/www
     working_dir: /var/www
     depends_on:
-      db:
-        condition: service_healthy
       redis:
         condition: service_started
 
-  db:
-    image: mysql:8.0
-    restart: always
-    ports:
-      - ${DB_PORT}:3306
+  app-php82:
+    build:
+      context: ./docker/php82
+      args:
+        UID: ${APP_UID}
+        GID: ${APP_GID}
+    tty: true
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ALLOW_EMPTY_PASSWORD: yes
-    healthcheck:
-      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER -p$$MYSQL_PASSWORD
+      REDIS_HOST: redis
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    depends_on:
+      redis:
+        condition: service_started
+    profiles:
+      - app-php82
+
+  app-php83:
+    build:
+      context: ./docker/php83
+      args:
+        UID: ${APP_UID}
+        GID: ${APP_GID}
+    tty: true
+    environment:
+      REDIS_HOST: redis
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    depends_on:
+      redis:
+        condition: service_started
+    profiles:
+      - app-php83
+
+  app-php84:
+    build:
+      context: ./docker/php84
+      args:
+        UID: ${APP_UID}
+        GID: ${APP_GID}
+    tty: true
+    environment:
+      REDIS_HOST: redis
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    depends_on:
+      redis:
+        condition: service_started
+    profiles:
+      - app-php84
 
   redis:
     image: redis:latest

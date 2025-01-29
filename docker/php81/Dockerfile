@@ -10,9 +10,6 @@ RUN groupadd -g $GID $GROUPNAME \
 # Add to download Composer packages from dist.
 RUN apt-get update && apt-get install -y unzip
 
-# Add to connect to MySQL.
-RUN docker-php-ext-install pdo_mysql
-
 # Add to connect to Redis.
 RUN apt-get update && apt-get install -y git \
     && git clone https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis \
@@ -21,5 +18,8 @@ RUN apt-get update && apt-get install -y git \
 # Add to measure code coverage.
 RUN pecl install xdebug \
     && docker-php-ext-enable xdebug
+
+# Add to silence Git permission issues in Composer.
+RUN git config --global --add safe.directory /var/www
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer

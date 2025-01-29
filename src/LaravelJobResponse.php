@@ -16,10 +16,9 @@ class LaravelJobResponse
     public function __construct(
         private readonly Dispatcher $dispatcher,
         private readonly TransportContract $transport,
-    ) {
-    }
+    ) {}
 
-    public function generateIdent(string $class = null): string
+    public function generateIdent(?string $class = null): string
     {
         return ($class ?? self::class).':rpc:'.Str::random(80);
     }

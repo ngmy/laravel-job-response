@@ -1,7 +1,9 @@
 parameters:
   level: max
   paths:
-    - .
+    - src
+    - config
+    - tests
     - .php-cs-fixer.dist.php
   excludePaths:
     - vendor
@@ -9,5 +11,11 @@ parameters:
   bootstrapFiles:
     - vendor-bin/php-cs-fixer/vendor/autoload.php
   treatPhpDocTypesAsCertain: false
+  typeAliases:
+    TransportResponse: 'array{response?: mixed, exception?: array{exception_class: string, exception_basename: string, message: string, file: string, code: int, trace: string, line: int, }|array{}}'
+  ignoreErrors:
+    - identifier: larastan.noEnvCallsOutsideOfConfig
+      path: config
+      reportUnmatched: false # Add for Larastan 2.
 
 # vim: set ft=yaml:

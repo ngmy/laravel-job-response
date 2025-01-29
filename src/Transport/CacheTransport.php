@@ -40,10 +40,10 @@ class CacheTransport extends TransportAbstract implements TransportContract
      */
     private readonly Repository $cacheStore;
 
-    public function __construct(string $store = null)
+    public function __construct(?string $store = null)
     {
-        \assert(\is_string(Config::get('job-transport.cache.store')) || null === Config::get('job-transport.cache.store'));
-        $store ??= (string) Config::get('job-transport.cache.store');
+        \assert(\is_string(Config::get('job-response.cache.store')) || null === Config::get('job-response.cache.store'));
+        $store ??= (string) Config::get('job-response.cache.store');
         $this->cacheStore = Cache::store($store);
 
         if (!method_exists($this->cacheStore->getStore(), 'lock')) {
@@ -87,15 +87,7 @@ class CacheTransport extends TransportAbstract implements TransportContract
     }
 
     /**
-     * @return list<array{response?: mixed, exception?: array{
-     *     exception_class: string,
-     *     exception_basename: string,
-     *     message: string,
-     *     file: string,
-     *     code: int,
-     *     trace: string,
-     *     line: int,
-     * }|array{}}>
+     * @return list<TransportResponse>
      *
      * @throws TimeoutException
      */
@@ -109,6 +101,7 @@ class CacheTransport extends TransportAbstract implements TransportContract
                 throw new TimeoutException('Timed out while waiting for a response');
             }
 
+            /** @var list<TransportResponse> $responses */
             if ($responses = $this->cacheStore->get($id)) {
                 \assert(\is_array($responses));
                 if (\count($responses) >= $expectedResponses) {

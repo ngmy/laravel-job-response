@@ -20,7 +20,7 @@ composer require ngmy/laravel-job-response
 ## Requirements
 
 - PHP >= 8.1
-- Laravel >= 9.0
+- Laravel >= 10.0
 
 ## Usage
 

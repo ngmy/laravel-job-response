@@ -32,14 +32,14 @@ class LaravelJobResponseServiceProvider extends ServiceProvider
         // Automatically apply the package configuration
         $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'job-response');
 
-        $this->app->singleton('laravel-job-response', fn (Application $app): LaravelJobResponse => new LaravelJobResponse(
+        $this->app->singleton('laravel-job-response', static fn (Application $app): LaravelJobResponse => new LaravelJobResponse(
             $app->make(Dispatcher::class),
             $app->make(TransportContract::class),
         ));
 
-        $this->app->singleton(TransportFactory::class, fn (Application $app): TransportFactory => new TransportFactory());
+        $this->app->singleton(TransportFactory::class, static fn (Application $app): TransportFactory => new TransportFactory());
 
-        $this->app->bind(TransportContract::class, function (Application $app): TransportContract {
+        $this->app->bind(TransportContract::class, static function (Application $app): TransportContract {
             \assert(\in_array(Config::get('job-response.transport'), TransportFactory::TRANSPORT_TYPES, true));
 
             return $app->make(TransportFactory::class)->getTransport(Config::get('job-response.transport'));
