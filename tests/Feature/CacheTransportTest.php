@@ -33,7 +33,8 @@ final class CacheTransportTest extends TestCase
 {
     public function testExceptionThrownForIncorrectStoreType(): void
     {
-        Config::set('cache.default', 'apc');
+        Config::set('job-response.cache.store', 'apc');
+        Config::set('cache.stores.apc', ['driver' => 'apc']);
         $this->expectException(\InvalidArgumentException::class);
         new CacheTransport();
     }
